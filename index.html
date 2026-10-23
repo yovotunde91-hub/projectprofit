@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ProjectProfit | Project price calculator for freelancers</title>
+<meta name="description" content="A free calculator that helps freelancers work out what to charge for a project. Enter your hours, rate, expenses and an allowance for surprises.">
+<meta name="theme-color" content="#EDF1EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1412" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="ProjectProfit: what should you charge for this project?">
+<meta property="og:description" content="Free project price calculator for freelancers.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230D7A5E'/%3E%3Cpath d='M10 24V8h6.4a5 5 0 0 1 0 10H13' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one calm column on phones (form, then result, with a price bar fixed at the bottom); form left and sticky result right on wide screens. */
+:root {
+  --bg: #EDF1EF;
+  --surface: #FFFFFF;
+  --ink: #12201B;
+  --muted: #566861;
+  --line: #D3DCD8;
+  --accent: #0D7A5E;
+  --accent-soft: #DDF1EA;
+  --panel: #12201B;
+  --panel-ink: #F1F6F3;
+  --panel-muted: #9CB2A9;
+  --panel-line: #2B3E37;
+  --font-display: 'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-figures: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1412;
+    --surface: #151F1C;
+    --ink: #E7EFEB;
+    --muted: #93A69E;
+    --line: #26342F;
+    --accent: #3CC9A1;
+    --accent-soft: #173229;
+    --panel: #1D2F28;
+    --panel-ink: #EBF5F0;
+    --panel-muted: #90B0A3;
+    --panel-line: #2F463D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1412;
+  --surface: #151F1C;
+  --ink: #E7EFEB;
+  --muted: #93A69E;
+  --line: #26342F;
+  --accent: #3CC9A1;
+  --accent-soft: #173229;
+  --panel: #1D2F28;
+  --panel-ink: #EBF5F0;
+  --panel-muted: #90B0A3;
+  --panel-line: #2F463D;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.55 var(--font-body);
+  padding-block: 20px 110px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 22px; }
+
+.top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.wordmark { font: 800 1.25rem/1 var(--font-display); letter-spacing: -0.01em; }
+.wordmark span { color: var(--accent); }
+.tag { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+h1 { margin: 0; font: 700 clamp(1.9rem, 6.4vw, 2.9rem)/1.08 var(--font-display); letter-spacing: -0.02em; text-wrap: balance; max-width: 18ch; }
+.lead { margin: 10px 0 0; color: var(--muted); max-width: 46ch; }
+
+.grid { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 820px) {
+  .grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); align-items: start; gap: 24px; }
+  .result { position: sticky; top: 20px; }
+}
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 22px; }
+.note { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); color: var(--ink); font-size: 0.9rem; }
+
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 14px; }
+legend { padding: 0; margin-bottom: 12px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.pair { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.field { min-width: 0; }
+.field label { display: block; font-weight: 500; margin-bottom: 6px; }
+.box { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); min-width: 0; }
+.box:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+.box .fix { padding: 0 0 0 12px; color: var(--muted); font-family: var(--font-figures); }
+.box .fix.end { padding: 0 12px 0 0; }
+.box input, .box select {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink);
+  font: 500 1.125rem/1.2 var(--font-figures); padding: 12px; font-variant-numeric: tabular-nums;
+}
+.box select { font-family: var(--font-body); font-size: 1rem; cursor: pointer; }
+.hint { margin: 6px 0 0; font-size: 0.875rem; color: var(--muted); }
+
+.actions { display: flex; justify-content: flex-end; }
+button { font: inherit; cursor: pointer; }
+.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 9px 14px; font-weight: 500; }
+.ghost:hover { border-color: var(--accent); }
+.ghost:focus-visible, .bar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.result { background: var(--panel); color: var(--panel-ink); border-radius: 14px; padding: 22px; display: grid; gap: 18px; }
+.eyebrow { margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--panel-muted); }
+.price { margin: 4px 0 0; font: 800 clamp(2.4rem, 10vw, 3.5rem)/1.05 var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.msg { margin: 6px 0 0; font-size: 0.9rem; color: var(--panel-muted); min-height: 1.4em; }
+dl { margin: 0; display: grid; }
+.row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 11px 0; border-top: 1px solid var(--panel-line); }
+.row dt { color: var(--panel-muted); font-size: 0.95rem; min-width: 0; }
+.row dd { margin: 0; font: 500 1rem var(--font-figures); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; flex-shrink: 0; }
+.row small { display: block; font-size: 0.8rem; color: var(--panel-muted); opacity: 0.85; }
+.profit { display: grid; gap: 4px; border-top: 1px solid var(--panel-line); padding-top: 16px; }
+.profit .big { margin: 0; font: 700 clamp(1.6rem, 6vw, 2rem)/1.1 var(--font-display); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.profit p { margin: 0; }
+.profit .sub { color: var(--panel-muted); font-size: 0.9rem; }
+
+.fine { margin: 0; font-size: 0.8rem; color: var(--muted); max-width: 62ch; }
+
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--panel); color: var(--panel-ink);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-top: 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.bar .l { font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--panel-muted); }
+.bar .v { font: 800 1.4rem/1.1 var(--font-display); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.bar button { background: transparent; color: var(--panel-ink); border: 1px solid var(--panel-line); border-radius: 10px; padding: 9px 12px; font-weight: 500; white-space: nowrap; }
+@media (min-width: 820px) { .bar { display: none; } body { padding-block: 28px 40px; } }
+</style>
+</head>
+<body>
+<noscript><p style="padding:16px;font-family:system-ui,sans-serif">Please turn on JavaScript to use the ProjectProfit calculator.</p></noscript>
+<div class="wrap">
+  <div class="top">
+    <div class="wordmark">Project<span>Profit</span></div>
+    <div class="tag">Project price calculator</div>
+  </div>
+
+  <div>
+    <h1>What should you charge for this project?</h1>
+    <p class="lead">Fill in the boxes. Your price updates as you type.</p>
+  </div>
+
+  <div class="grid">
+    <form class="card" id="form" autocomplete="off" novalidate>
+      <p class="note" id="example">These are example numbers. Change them to your own.</p>
+
+      <fieldset>
+        <legend>1. Currency</legend>
+        <div class="field">
+          <label for="currency">Which currency will you charge in?</label>
+          <div class="box">
+            <select id="currency">
+              <option value="USD">US dollar ($)</option>
+              <option value="GBP">British pound (£)</option>
+              <option value="EUR">Euro (€)</option>
+              <option value="CAD">Canadian dollar (CA$)</option>
+              <option value="AUD">Australian dollar (A$)</option>
+              <option value="NGN">Nigerian naira (₦)</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. Your time</legend>
+        <div class="pair">
+          <div class="field">
+            <label for="hours">Hours of work</label>
+            <div class="box">
+              <input id="hours" type="text" inputmode="decimal" value="20" aria-describedby="hours-hint">
+              <span class="fix end">h</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="rate">Hourly rate</label>
+            <div class="box">
+              <span class="fix cur">$</span>
+              <input id="rate" type="text" inputmode="decimal" value="40" aria-describedby="hours-hint">
+            </div>
+          </div>
+        </div>
+        <p class="hint" id="hours-hint">Count every hour: calls, edits and emails, not only the main work.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>3. Costs</legend>
+        <div class="field">
+          <label for="expenses">Project expenses</label>
+          <div class="box">
+            <span class="fix cur">$</span>
+            <input id="expenses" type="text" inputmode="decimal" value="60" aria-describedby="exp-hint">
+          </div>
+          <p class="hint" id="exp-hint">Money you must pay for this job, such as software, stock photos or travel. Enter 0 if none.</p>
+        </div>
+        <div class="field">
+          <label for="buffer">Allowance for unexpected costs</label>
+          <div class="box">
+            <input id="buffer" type="text" inputmode="decimal" value="10" aria-describedby="buf-hint">
+            <span class="fix end">%</span>
+          </div>
+          <p class="hint" id="buf-hint">Extra room for surprises, like more edits or a delay. 10% is a common start.</p>
+        </div>
+      </fieldset>
+
+      <div class="actions"><button type="button" class="ghost" id="clear">Clear all</button></div>
+    </form>
+
+    <section class="result" id="result" aria-label="Your result">
+      <div>
+        <p class="eyebrow">Suggested project price</p>
+        <p class="price" id="price">$946.00</p>
+        <p class="msg" id="msg" role="status"></p>
+      </div>
+
+      <dl>
+        <div class="row"><dt>Your time<small id="time-sub">20 h × $40.00</small></dt><dd id="time">$800.00</dd></div>
+        <div class="row"><dt>Expenses</dt><dd id="exp">$60.00</dd></div>
+        <div class="row"><dt>Allowance<small id="allow-sub">10% of $860.00</small></dt><dd id="allow">$86.00</dd></div>
+      </dl>
+
+      <div class="profit">
+        <p class="eyebrow">Estimated profit</p>
+        <p class="big" id="profit">$886.00</p>
+        <p class="sub">Your price minus your expenses.</p>
+        <div class="row" style="margin-top:10px">
+          <dt>If surprises use the whole allowance</dt>
+          <dd id="floor">$800.00</dd>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <p class="fine">This is an estimate to help you quote. It does not include tax, platform fees or payment fees. Add those yourself if they apply to you.</p>
+</div>
+
+<div class="bar">
+  <div>
+    <div class="l">Suggested price</div>
+    <div class="v" id="bar-price">$946.00</div>
+  </div>
+  <button type="button" id="see">See breakdown</button>
+</div>
+
+<script>
+(function () {
+  var SYMBOL = { USD: '$', GBP: '£', EUR: '€', CAD: 'CA$', AUD: 'A$', NGN: '₦' };
+
+  function num(v) {
+    var s = String(v == null ? '' : v).replace(/,/g, '').replace(/[^0-9.]/g, '');
+    var p = s.split('.');
+    if (p.length > 2) { s = p[0] + '.' + p.slice(1).join(''); }
+    var n = parseFloat(s);
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+
+  // COMPUTE-START
+  function compute(i) {
+    var pct = Math.min(Math.max(i.pct, 0), 100);
+    var labour = i.hours * i.rate;
+    var base = labour + i.expenses;
+    var allowance = base * pct / 100;
+    var price = base + allowance;
+    return {
+      labour: labour,
+      expenses: i.expenses,
+      base: base,
+      allowance: allowance,
+      price: price,
+      profit: price - i.expenses,
+      profitFloor: price - i.expenses - allowance,
+      pct: pct
+    };
+  }
+  // COMPUTE-END
+
+  var $ = function (id) { return document.getElementById(id); };
+  var nf = new Intl.NumberFormat('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function money(n) { return SYMBOL[$('currency').value] + nf.format(n); }
+  function trim(n) { return String(+n.toFixed(2)); }
+
+  function render() {
+    var sym = SYMBOL[$('currency').value];
+    var cur = document.querySelectorAll('.cur');
+    for (var k = 0; k < cur.length; k++) { cur[k].textContent = sym; }
+
+    var hours = num($('hours').value);
+    var rate = num($('rate').value);
+    var expenses = num($('expenses').value);
+    var pctRaw = num($('buffer').value);
+
+    if (hours <= 0 || rate <= 0) {
+      ['price', 'bar-price', 'time', 'exp', 'allow', 'profit', 'floor'].forEach(function (id) { $(id).textContent = '—'; });
+      $('time-sub').textContent = 'hours × rate';
+      $('allow-sub').textContent = '% of time + expenses';
+      $('msg').textContent = 'Enter your hours and hourly rate to see a price.';
+      return;
+    }
+
+    var r = compute({ hours: hours, rate: rate, expenses: expenses, pct: pctRaw });
+    $('price').textContent = money(r.price);
+    $('bar-price').textContent = money(r.price);
+    $('time').textContent = money(r.labour);
+    $('time-sub').textContent = trim(hours) + ' h × ' + money(rate);
+    $('exp').textContent = money(r.expenses);
+    $('allow').textContent = money(r.allowance);
+    $('allow-sub').textContent = trim(r.pct) + '% of ' + money(r.base);
+    $('profit').textContent = money(r.profit);
+    $('floor').textContent = money(r.profitFloor);
+    $('msg').textContent = pctRaw > 100 ? 'Allowance is capped at 100%.' : '';
+  }
+
+  var example = $('example');
+  $('form').addEventListener('submit', function (e) { e.preventDefault(); });
+  $('form').addEventListener('input', function () { example.hidden = true; render(); });
+  $('currency').addEventListener('change', render);
+
+  $('clear').addEventListener('click', function () {
+    ['hours', 'rate', 'expenses', 'buffer'].forEach(function (id) { $(id).value = ''; });
+    example.hidden = true;
+    render();
+    $('hours').focus();
+  });
+
+  $('see').addEventListener('click', function () {
+    var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('result').scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
